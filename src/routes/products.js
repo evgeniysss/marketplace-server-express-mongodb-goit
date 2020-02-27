@@ -10,11 +10,11 @@ router.get("/:productId", (req, res) => {
   const id = req.params.productId;
   Product.findById(id)
     .exec()
-    .then(doc => {
-      console.log(doc);
+    .then(item => {
+      console.log(item);
       res.status(200).json({
         status: "success",
-        product: doc
+        product: item
       });
     })
     .catch(err => {
@@ -26,9 +26,9 @@ router.get("/:productId", (req, res) => {
 router.get("/", (req, res) => {
   Product.find()
     .exec()
-    .then(docs => {
-      console.log(docs);
-      res.status(200).json(docs);
+    .then(items => {
+      console.log(items);
+      res.status(200).json(items);
     })
     .catch(err => {
       console.log(err);
@@ -60,7 +60,7 @@ router.post("/", jsonParser, (req, res) => {
     .then(result => {
       console.log(result);
       res.status(201).json({
-        status: "success3",
+        status: "success",
         product: product
       });
     })
@@ -80,11 +80,11 @@ router.put("/:productId", jsonParser, (req, res) => {
 
   Product.findById(id)
     .exec()
-    .then(doc => {
-      console.log(doc);
+    .then(item => {
+      console.log(item);
       res.status(200).json({
         status: "success",
-        product: doc
+        product: item
       });
     })
     .catch(err => {
@@ -94,8 +94,8 @@ router.put("/:productId", jsonParser, (req, res) => {
 
   Product.update({ _id: id }, { $set: newObj })
     .exec()
-    .then(doc => {
-      res.status(200).json(doc);
+    .then(item => {
+      res.status(200).json(item);
     })
     .catch(err => {
       console.log(err);

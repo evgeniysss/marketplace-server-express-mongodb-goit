@@ -68,9 +68,9 @@ router.patch("/:userId", jsonParser, (req, res) => {
   }
   User.update({ _id: id }, { $set: updateOps })
     .exec()
-    .then(result => {
-      console.log(result);
-      res.status(200).json(result);
+    .then(item => {
+      console.log(item);
+      res.status(200).json(item);
     })
     .catch(err => {
       console.log(err);
@@ -83,16 +83,16 @@ router.put("/:userId", jsonParser, (req, res) => {
   const reqBody = req.body;
   const newValueKey = Object.keys(reqBody).toString();
   const newValue = Object.values(reqBody);
-  const newObj = new Object();
+  const newObj = {};
   newObj[newValueKey] = newValue;
 
   User.findById(id)
     .exec()
-    .then(doc => {
-      console.log(doc);
+    .then(item => {
+      console.log(item);
       res.status(200).json({
         status: "success",
-        user: doc
+        user: item
       });
     })
     .catch(err => {
@@ -102,8 +102,8 @@ router.put("/:userId", jsonParser, (req, res) => {
 
   User.update({ _id: id }, { $set: newObj })
     .exec()
-    .then(doc => {
-      res.status(200).json(doc);
+    .then(item => {
+      res.status(200).json(item);
     })
     .catch(err => {
       console.log(err);
@@ -115,9 +115,9 @@ router.delete("/:userId", (req, res) => {
   const id = req.params.userId;
   User.remove({ _id: id })
     .exec()
-    .then(result => {
-      console.log(result);
-      res.status(200).json(result);
+    .then(item => {
+      console.log(item);
+      res.status(200).json(item);
     })
     .catch(err => {
       console.log(err);

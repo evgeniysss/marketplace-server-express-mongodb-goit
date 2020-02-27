@@ -10,11 +10,11 @@ router.get("/:orderId", (req, res) => {
   const id = req.params.orderId;
   Order.findById(id)
     .exec()
-    .then(doc => {
-      console.log(doc);
+    .then(item => {
+      console.log(item);
       res.status(200).json({
         status: "success",
-        order: doc
+        order: item
       });
     })
     .catch(err => {
@@ -26,9 +26,9 @@ router.get("/:orderId", (req, res) => {
 router.get("/", (req, res) => {
   Order.find()
     .exec()
-    .then(docs => {
-      console.log(docs);
-      res.status(200).json(docs);
+    .then(items => {
+      console.log(items);
+      res.status(200).json(items);
     })
     .catch(err => {
       console.log(err);
