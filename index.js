@@ -1,5 +1,15 @@
 const express = require("express");
 let app = express();
+const mongoose = require("mongoose");
+
+mongoose.connect(
+  "mongodb+srv://evgeniy:GRzGyN1mc132o0mZ@cluster0-cg5kf.mongodb.net/test?retryWrites=true&w=majority",
+  { useNewUrlParser: true, useUnifiedTopology: true },
+  function(err) {
+    if (err) throw err;
+    console.log("☆☆☆ Connected to Data Base! ☆☆☆");
+  }
+);
 
 let port = 3000;
 

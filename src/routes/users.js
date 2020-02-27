@@ -1,112 +1,128 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+let jsonParser = bodyParser.json();
 let router = express.Router();
 
-const path = require("path");
-const fs = require("fs");
+const mongoose = require("mongoose");
+const User = require("../../schemas/user");
 
-// const uuid = require("uuid/v4");
-const shortid = require("shortid");
-let usersDataBase = require("../db/all-users.json");
-
-const checkUser = user => {
-  const userName = user.user;
-  const userPhone = user.telephone.replace(/\s/g, "");
-  const userPass = user.password;
-  const userEmail = user.email;
-  if (
-    typeof userName === "string" &&
-    !isNaN(Number(userPhone)) &&
-    typeof userPass === "string" &&
-    typeof userEmail === "string"
-  )
-    return true;
-  else return false;
-};
-
-const saveUser = user => {
-  console.log("user :", user);
-
-  const usersDataBasePath = path.join(
-    __dirname,
-    "../",
-    "db/",
-    "/all-users.json"
-  );
-
-  const userDirPath = path.join(
-    __dirname,
-    "../",
-    "db/",
-    "users",
-    `/${user.user}`
-  );
-
-  fs.readFile(usersDataBasePath, "utf-8", (err, data) => {
-    if (err) {
+router.get("/:userId", (req, res) => {
+  const id = req.params.userId;
+  User.findById(id)
+    .exec()
+    .then(item => {
+      console.log(item);
+      res.status(200).json(item);
+    })
+    .catch(err => {
       console.log(err);
-    } else {
-      let users = JSON.parse(data);
-      user.id = shortid.generate();
-      users.push(user);
-      usersToJson = JSON.stringify(users);
-      fs.writeFile(usersDataBasePath, usersToJson, "utf-8", err => {
-        if (err) {
-          return console.log(err);
-        }
-        console.log("New user already saved!");
-      });
-      fs.mkdir(userDirPath, err => {
-        if (err) {
-          return console.log(err);
-        }
-      });
-    }
-  });
-};
-
-router.post("/*", (req, res) => {
-  let body = "";
-
-  req.on("data", data => {
-    body = body + data;
-    console.log("Incoming data!");
-  });
-
-  req.on("end", () => {
-    const userToCheckAndSave = JSON.parse(body);
-
-    if (checkUser(userToCheckAndSave)) {
-      console.log("Validation: success.");
-      saveUser(userToCheckAndSave);
-      res.setHeader("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "success", user: userToCheckAndSave }));
-      res.end();
-    } else {
-      console.log("Validation: error.");
-      res.setHeader("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error! Check type of input value!" }));
-      res.end();
-    }
-  });
+      res.status(500).json({ error: err });
+    });
 });
 
-router.get("/*", (req, res) => {
-  let userId = req.url.slice(req.url.lastIndexOf("/") + 1);
-  const getUserById = usersDataBase.find(user => user.id.toString() === userId);
+router.get("/", (req, res) => {
+  User.find()
+    .exec()
+    .then(items => {
+      console.log(items);
+      res.status(200).json(items);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
 
-  if (getUserById) {
-    res.setHeader("Content-Type", "application/json");
-    res.send(getUserById);
-    res.end();
-  } else {
-    res.setHeader("Content-Type", "application/json");
-    res.send(
-      JSON.stringify({
-        status: "not found"
-      })
-    );
-    res.end();
+router.post("/", jsonParser, (req, res) => {
+  const user = new User({
+    _id: new mongoose.Types.ObjectId(),
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    telephone: req.body.telephone,
+    nickName: req.body.nickName,
+    location: req.body.location,
+    password: req.body.password,
+    email: req.body.email
+  });
+
+  user
+    .save()
+    .then(result => {
+      console.log(result);
+      res.status(200).json({
+        status: "success",
+        user: user
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
+
+router.patch("/:userId", jsonParser, (req, res) => {
+  const id = req.params.userId;
+  const updateOps = {};
+  for (const ops of req.body) {
+    updateOps[ops.propName] = ops.value;
   }
+  User.update({ _id: id }, { $set: updateOps })
+    .exec()
+    .then(result => {
+      console.log(result);
+      res.status(200).json(result);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
+
+router.put("/:userId", jsonParser, (req, res) => {
+  const id = req.params.userId;
+  const reqBody = req.body;
+  const newValueKey = Object.keys(reqBody).toString();
+  const newValue = Object.values(reqBody);
+  const newObj = new Object();
+  newObj[newValueKey] = newValue;
+
+  User.findById(id)
+    .exec()
+    .then(doc => {
+      console.log(doc);
+      res.status(200).json({
+        status: "success",
+        user: doc
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+
+  User.update({ _id: id }, { $set: newObj })
+    .exec()
+    .then(doc => {
+      res.status(200).json(doc);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
+
+router.delete("/:userId", (req, res) => {
+  const id = req.params.userId;
+  User.remove({ _id: id })
+    .exec()
+    .then(result => {
+      console.log(result);
+      res.status(200).json(result);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
 });
 
 module.exports = router;

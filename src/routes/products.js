@@ -1,69 +1,106 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+let jsonParser = bodyParser.json();
 let router = express.Router();
-let products = require("../db/all-products.json");
 
-router.get("/*", (req, res) => {
-  if (req.url === "/") {
-    res.setHeader("Content-Type", "application/json");
-    res.send(products);
-    res.end();
-    return;
-  }
+const mongoose = require("mongoose");
+const Product = require("../../schemas/products");
 
-  if (req.url.includes("?")) {
-    let productsArr = [];
-    const productsIdsArr = req.query.ids.split(",");
+router.get("/:productId", (req, res) => {
+  const id = req.params.productId;
+  Product.findById(id)
+    .exec()
+    .then(doc => {
+      console.log(doc);
+      res.status(200).json({
+        status: "success",
+        product: doc
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
 
-    productsIdsArr.map(item => {
-      const getProductById = products.find(
-        element => element.id === Number(item)
-      );
-      if (getProductById) {
-        const productObj = {
-          id: getProductById.id,
-          sku: getProductById.sku,
-          name: getProductById.name,
-          description: getProductById.description
-        };
-        productsArr.push(productObj);
+router.get("/", (req, res) => {
+  Product.find()
+    .exec()
+    .then(docs => {
+      console.log(docs);
+      res.status(200).json(docs);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
+
+router.post("/", jsonParser, (req, res) => {
+  const product = new Product({
+    _id: new mongoose.Types.ObjectId(),
+    sku: req.body.sku,
+    name: req.body.name,
+    description: req.body.description,
+    price: req.body.price,
+    currency: req.body.currency,
+    creatorId: req.body.creatorId,
+    created: req.body.created,
+    modified: req.body.modified,
+    categories: [
+      {
+        category: req.body.categories[0]
       }
-      if (productsArr.length === 0) {
-        foundedProducts = {
-          status: "no products",
-          products: []
-        };
-      } else {
-        foundedProducts = {
-          status: "success",
-          products: productsArr
-        };
-      }
+    ],
+    likes: req.body.likes
+  });
+
+  product
+    .save()
+    .then(result => {
+      console.log(result);
+      res.status(201).json({
+        status: "success3",
+        product: product
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
+
+router.put("/:productId", jsonParser, (req, res) => {
+  const id = req.params.productId;
+  const reqBody = req.body;
+  const newValueKey = Object.keys(reqBody).toString();
+  const newValue = +Object.values(reqBody);
+  const newObj = new Object();
+  newObj[newValueKey] = newValue;
+
+  Product.findById(id)
+    .exec()
+    .then(doc => {
+      console.log(doc);
+      res.status(200).json({
+        status: "success",
+        product: doc
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
     });
 
-    res.setHeader("Content-Type", "application/json");
-    res.send(foundedProducts);
-    res.end();
-    return;
-  }
-
-  let oneProductId = req.url.slice(req.url.lastIndexOf("/") + 1);
-  const getOneProductById = products.find(
-    item => item.id.toString() === oneProductId
-  );
-  if (getOneProductById) {
-    res.setHeader("Content-Type", "application/json");
-    res.send(getOneProductById);
-    res.end();
-  } else {
-    res.setHeader("Content-Type", "application/json");
-    res.send(
-      JSON.stringify({
-        status: "no products",
-        products: []
-      })
-    );
-    res.end();
-  }
+  Product.update({ _id: id }, { $set: newObj })
+    .exec()
+    .then(doc => {
+      res.status(200).json(doc);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
 });
 
 module.exports = router;
