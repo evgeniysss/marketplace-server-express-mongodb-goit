@@ -6,6 +6,23 @@ let router = express.Router();
 const mongoose = require("mongoose");
 const User = require("../../schemas/user");
 
+const checkUser = userToCheck => {
+  const firstName = userToCheck.firstName;
+  const lastName = userToCheck.lastName;
+  const nickName = userToCheck.nickName;
+  const location = userToCheck.password;
+  const password = userToCheck.password;
+  if (
+    typeof firstName === "string" &&
+    typeof lastName === "string" &&
+    typeof nickName === "string" &&
+    typeof location === "string" &&
+    typeof password === "string"
+  )
+    return true;
+  else return false;
+};
+
 router.get("/:userId", (req, res) => {
   const id = req.params.userId;
   User.findById(id)
@@ -34,30 +51,38 @@ router.get("/", (req, res) => {
 });
 
 router.post("/", jsonParser, (req, res) => {
-  const user = new User({
-    _id: new mongoose.Types.ObjectId(),
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    telephone: req.body.telephone,
-    nickName: req.body.nickName,
-    location: req.body.location,
-    password: req.body.password,
-    email: req.body.email
-  });
-
-  user
-    .save()
-    .then(result => {
-      console.log(result);
-      res.status(200).json({
-        status: "success",
-        user: user
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
+  if (checkUser(req.body)) {
+    console.log("Validation complete!");
+    const user = new User({
+      _id: new mongoose.Types.ObjectId(),
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      telephone: req.body.telephone,
+      nickName: req.body.nickName,
+      location: req.body.location,
+      password: req.body.password,
+      email: req.body.email
     });
+
+    user
+      .save()
+      .then(result => {
+        console.log(result);
+        res.status(200).json({
+          status: "success",
+          user: user
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ error: err });
+      });
+  } else {
+    console.log("Validation error!");
+    res
+      .status(500)
+      .json({ error: "failed, you must enter correct type of data" });
+  }
 });
 
 router.patch("/:userId", jsonParser, (req, res) => {

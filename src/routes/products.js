@@ -6,6 +6,21 @@ let router = express.Router();
 const mongoose = require("mongoose");
 const Product = require("../../schemas/products");
 
+const checkProduct = productToCheck => {
+  const sku = productToCheck.sku;
+  const name = productToCheck.name;
+  const description = productToCheck.description;
+  const categories = productToCheck.categories;
+  if (
+    typeof sku === "number" &&
+    typeof name === "string" &&
+    typeof description === "string" &&
+    typeof categories === "object"
+  )
+    return true;
+  else return false;
+};
+
 router.get("/:productId", (req, res) => {
   const id = req.params.productId;
   Product.findById(id)
@@ -37,37 +52,45 @@ router.get("/", (req, res) => {
 });
 
 router.post("/", jsonParser, (req, res) => {
-  const product = new Product({
-    _id: new mongoose.Types.ObjectId(),
-    sku: req.body.sku,
-    name: req.body.name,
-    description: req.body.description,
-    price: req.body.price,
-    currency: req.body.currency,
-    creatorId: req.body.creatorId,
-    created: req.body.created,
-    modified: req.body.modified,
-    categories: [
-      {
-        category: req.body.categories[0]
-      }
-    ],
-    likes: req.body.likes
-  });
-
-  product
-    .save()
-    .then(result => {
-      console.log(result);
-      res.status(201).json({
-        status: "success",
-        product: product
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
+  if (checkProduct(req.body)) {
+    console.log("Validation complete!");
+    const product = new Product({
+      _id: new mongoose.Types.ObjectId(),
+      sku: req.body.sku,
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      currency: req.body.currency,
+      creatorId: req.body.creatorId,
+      created: req.body.created,
+      modified: req.body.modified,
+      categories: [
+        {
+          category: req.body.categories[0]
+        }
+      ],
+      likes: req.body.likes
     });
+
+    product
+      .save()
+      .then(result => {
+        console.log(result);
+        res.status(201).json({
+          status: "success",
+          product: product
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ error: err });
+      });
+  } else {
+    console.log("Validation error!");
+    res
+      .status(500)
+      .json({ error: "failed, you must enter correct type of data" });
+  }
 });
 
 router.put("/:productId", jsonParser, (req, res) => {

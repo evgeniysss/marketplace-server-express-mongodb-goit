@@ -6,6 +6,23 @@ let router = express.Router();
 const mongoose = require("mongoose");
 const Order = require("../../schemas/orders");
 
+const checkOrder = orderToCheck => {
+  const creator = orderToCheck.creator;
+  const productsList = orderToCheck.productsList;
+  const deliveryType = orderToCheck.deliveryType;
+  const deliveryAdress = orderToCheck.deliveryAdress;
+  const sumToPay = orderToCheck.sumToPay;
+  if (
+    typeof creator === "string" &&
+    typeof productsList === "object" &&
+    typeof deliveryType === "string" &&
+    typeof deliveryAdress === "string" &&
+    typeof sumToPay === "number"
+  )
+    return true;
+  else return false;
+};
+
 router.get("/:orderId", (req, res) => {
   const id = req.params.orderId;
   Order.findById(id)
@@ -37,29 +54,37 @@ router.get("/", (req, res) => {
 });
 
 router.post("/", jsonParser, (req, res) => {
-  const order = new Order({
-    _id: new mongoose.Types.ObjectId(),
-    creator: req.body.creator,
-    productsList: req.body.productsList,
-    deliveryType: req.body.deliveryType,
-    deliveryAdress: req.body.deliveryAdress,
-    sumToPay: req.body.sumToPay,
-    status: req.body.status
-  });
-
-  order
-    .save()
-    .then(result => {
-      console.log(result);
-      res.status(201).json({
-        status: "success",
-        order: order
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
+  if (checkOrder(req.body)) {
+    console.log("Validation complete!");
+    const order = new Order({
+      _id: new mongoose.Types.ObjectId(),
+      creator: req.body.creator,
+      productsList: req.body.productsList,
+      deliveryType: req.body.deliveryType,
+      deliveryAdress: req.body.deliveryAdress,
+      sumToPay: req.body.sumToPay,
+      status: req.body.status
     });
+
+    order
+      .save()
+      .then(result => {
+        console.log(result);
+        res.status(201).json({
+          status: "success",
+          order: order
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ error: err });
+      });
+  } else {
+    console.log("Validation error!");
+    res
+      .status(500)
+      .json({ error: "failed, you must enter correct type of data" });
+  }
 });
 
 module.exports = router;
