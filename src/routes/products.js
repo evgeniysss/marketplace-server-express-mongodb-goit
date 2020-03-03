@@ -1,10 +1,10 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-let jsonParser = bodyParser.json();
+// const bodyParser = require("body-parser");
+// let jsonParser = bodyParser.json();
 let router = express.Router();
 
 const mongoose = require("mongoose");
-const Product = require("../../schemas/products");
+const Product = require("../../models/products");
 
 const checkProduct = productToCheck => {
   const sku = productToCheck.sku;
@@ -34,7 +34,7 @@ router.get("/:productId", (req, res) => {
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json({ error: err });
+      res.status(404).json({ error: "Product not found" });
     });
 });
 
@@ -51,7 +51,7 @@ router.get("/", (req, res) => {
     });
 });
 
-router.post("/", jsonParser, (req, res) => {
+router.post("/", (req, res) => {
   if (checkProduct(req.body)) {
     console.log("Validation complete!");
     const product = new Product({
@@ -93,7 +93,7 @@ router.post("/", jsonParser, (req, res) => {
   }
 });
 
-router.put("/:productId", jsonParser, (req, res) => {
+router.put("/:productId", (req, res) => {
   const id = req.params.productId;
   const reqBody = req.body;
   const newValueKey = Object.keys(reqBody).toString();
@@ -101,25 +101,9 @@ router.put("/:productId", jsonParser, (req, res) => {
   const newObj = new Object();
   newObj[newValueKey] = newValue;
 
-  Product.findById(id)
-    .exec()
-    .then(item => {
-      console.log(item);
-      res.status(200).json({
-        status: "success",
-        product: item
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
-    });
-
   Product.update({ _id: id }, { $set: newObj })
     .exec()
-    .then(item => {
-      res.status(200).json(item);
-    })
+    .then(console.log("Product already updated"))
     .catch(err => {
       console.log(err);
       res.status(500).json({ error: err });

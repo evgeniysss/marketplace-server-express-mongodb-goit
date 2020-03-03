@@ -1,23 +1,20 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-let jsonParser = bodyParser.json();
+
 let router = express.Router();
 
 const mongoose = require("mongoose");
-const User = require("../../schemas/user");
+const User = require("../../models/user");
 
 const checkUser = userToCheck => {
-  const firstName = userToCheck.firstName;
-  const lastName = userToCheck.lastName;
-  const nickName = userToCheck.nickName;
-  const location = userToCheck.password;
+  const userName = userToCheck.user;
+  const telephone = userToCheck.telephone;
   const password = userToCheck.password;
+  const email = userToCheck.email;
   if (
-    typeof firstName === "string" &&
-    typeof lastName === "string" &&
-    typeof nickName === "string" &&
-    typeof location === "string" &&
-    typeof password === "string"
+    typeof userName === "string" &&
+    typeof telephone === "string" &&
+    typeof password === "string" &&
+    typeof email === "string"
   )
     return true;
   else return false;
@@ -33,7 +30,7 @@ router.get("/:userId", (req, res) => {
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json({ error: err });
+      res.status(404).json({ error: "User not found" });
     });
 });
 
@@ -50,7 +47,7 @@ router.get("/", (req, res) => {
     });
 });
 
-router.post("/", jsonParser, (req, res) => {
+router.post("/", (req, res) => {
   if (checkUser(req.body)) {
     console.log("Validation complete!");
     const user = new User({
@@ -85,25 +82,7 @@ router.post("/", jsonParser, (req, res) => {
   }
 });
 
-router.patch("/:userId", jsonParser, (req, res) => {
-  const id = req.params.userId;
-  const updateOps = {};
-  for (const ops of req.body) {
-    updateOps[ops.propName] = ops.value;
-  }
-  User.update({ _id: id }, { $set: updateOps })
-    .exec()
-    .then(item => {
-      console.log(item);
-      res.status(200).json(item);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
-    });
-});
-
-router.put("/:userId", jsonParser, (req, res) => {
+router.put("/:userId", (req, res) => {
   const id = req.params.userId;
   const reqBody = req.body;
   const newValueKey = Object.keys(reqBody).toString();
@@ -122,26 +101,12 @@ router.put("/:userId", jsonParser, (req, res) => {
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json({ error: err });
+      res.status(404).json({ error: "User not found" });
     });
 
   User.update({ _id: id }, { $set: newObj })
     .exec()
     .then(item => {
-      res.status(200).json(item);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
-    });
-});
-
-router.delete("/:userId", (req, res) => {
-  const id = req.params.userId;
-  User.remove({ _id: id })
-    .exec()
-    .then(item => {
-      console.log(item);
       res.status(200).json(item);
     })
     .catch(err => {

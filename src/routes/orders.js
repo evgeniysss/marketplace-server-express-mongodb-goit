@@ -1,10 +1,8 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-let jsonParser = bodyParser.json();
 let router = express.Router();
 
 const mongoose = require("mongoose");
-const Order = require("../../schemas/orders");
+const Order = require("../../models/orders");
 
 const checkOrder = orderToCheck => {
   const creator = orderToCheck.creator;
@@ -36,7 +34,7 @@ router.get("/:orderId", (req, res) => {
     })
     .catch(err => {
       console.log(err);
-      res.status(500).json({ error: err });
+      res.status(404).json({ error: "404" });
     });
 });
 
@@ -53,7 +51,7 @@ router.get("/", (req, res) => {
     });
 });
 
-router.post("/", jsonParser, (req, res) => {
+router.post("/", (req, res) => {
   if (checkOrder(req.body)) {
     console.log("Validation complete!");
     const order = new Order({
@@ -82,7 +80,7 @@ router.post("/", jsonParser, (req, res) => {
   } else {
     console.log("Validation error!");
     res
-      .status(500)
+      .status(400)
       .json({ error: "failed, you must enter correct type of data" });
   }
 });

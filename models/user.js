@@ -2,24 +2,25 @@ const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
-  firstName: String,
-  lastName: String,
+  user: String,
   telephone: String,
-  nickName: String,
-  location: String,
   password: String,
   email: String,
   favoriteProducts: [
     {
-      id: String
+      id: Object
     }
   ],
   viewedProducts: [
     {
-      id: String
+      id: Object
     }
   ],
-  orders: Array
+  orders: [
+    {
+      order: Object
+    }
+  ]
 });
 
 module.exports = mongoose.model("User", userSchema);
