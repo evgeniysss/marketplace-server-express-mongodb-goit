@@ -50,11 +50,8 @@ router.post("/", (req, res) => {
   if (checkUser(req.body)) {
     console.log("Validation complete!");
     const user = new User({
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
+      user: req.body.firstName,
       telephone: req.body.telephone,
-      nickName: req.body.nickName,
-      location: req.body.location,
       password: req.body.password,
       email: req.body.email
     });
@@ -75,7 +72,7 @@ router.post("/", (req, res) => {
   } else {
     console.log("Validation error!");
     res
-      .status(500)
+      .status(400)
       .json({ error: "failed, you must enter correct type of data" });
   }
 });
