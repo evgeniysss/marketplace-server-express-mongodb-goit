@@ -4,7 +4,7 @@ let router = express.Router();
 const mongoose = require("mongoose");
 const User = require("../../models/user");
 
-const { body, validationResult } = require("express-validator/check");
+const { validationResult, checkSchema } = require("express-validator/check");
 
 const checkUser = userToCheck => {
   const userName = userToCheck.user;
@@ -50,10 +50,12 @@ router.get("/", (req, res) => {
 
 router.post(
   "/",
-  body("user").isString(),
-  body("telephone").isString(),
-  body("email").isEmail(),
-  body("password").isString(),
+  checkSchema({
+    user: { isString: true },
+    telephone: { isString: true },
+    email: { isString: true },
+    password: { isString: true }
+  }),
   (req, res) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
@@ -87,37 +89,51 @@ router.post(
   }
 );
 
-router.put("/:userId", (req, res) => {
-  const id = req.params.userId;
-  const reqBody = req.body;
-  const newValueKey = Object.keys(reqBody).toString();
-  const newValue = Object.values(reqBody);
-  const newObj = {};
-  newObj[newValueKey] = newValue;
+router.put(
+  "/:userId",
+  checkSchema({
+    viewedProducts: { isArray: true }
+  }),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      const id = req.params.userId;
+      const reqBody = req.body;
+      const newValueKey = Object.keys(reqBody).toString();
+      const newValue = Object.values(reqBody);
+      const newObj = {};
+      newObj[newValueKey] = newValue;
 
-  User.findById(id)
-    .exec()
-    .then(item => {
-      console.log(item);
-      res.status(200).json({
-        status: "success",
-        user: item
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(404).json({ error: "User not found" });
-    });
+      User.findById(id)
+        .exec()
+        .then(item => {
+          console.log(item);
+          res.status(200).json({
+            status: "success",
+            user: item
+          });
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(404).json({ error: "User not found" });
+        });
 
-  User.update({ _id: id }, { $set: newObj })
-    .exec()
-    .then(item => {
-      res.status(200).json(item);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
-    });
-});
+      User.update({ _id: id }, { $set: newObj })
+        .exec()
+        .then(item => {
+          res.status(200).json(item);
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(500).json({ error: err });
+        });
+    } else {
+      console.log("Validation error!");
+      res
+        .status(400)
+        .json({ error: "failed, you must enter correct type of data" });
+    }
+  }
+);
 
 module.exports = router;
