@@ -50,6 +50,8 @@ router.get("/", (req, res) => {
 
 router.post(
   "/",
+  body("user").isString(),
+  body("telephone").isString(),
   body("email").isEmail(),
   body("password").isString(),
   (req, res) => {
@@ -57,7 +59,7 @@ router.post(
     if (errors.isEmpty()) {
       console.log("Validation complete!");
       const user = new User({
-        user: req.body.firstName,
+        user: req.body.user,
         telephone: req.body.telephone,
         password: req.body.password,
         email: req.body.email
@@ -82,35 +84,6 @@ router.post(
         .status(400)
         .json({ error: "failed, you must enter correct type of data" });
     }
-
-    //   if (checkUser(req.body)) {
-    //     console.log("Validation complete!");
-    //     const user = new User({
-    //       user: req.body.firstName,
-    //       telephone: req.body.telephone,
-    //       password: req.body.password,
-    //       email: req.body.email
-    //     });
-
-    //     user
-    //       .save()
-    //       .then(result => {
-    //         console.log(result);
-    //         res.status(200).json({
-    //           status: "success",
-    //           user: user
-    //         });
-    //       })
-    //       .catch(err => {
-    //         console.log(err);
-    //         res.status(500).json({ error: err });
-    //       });
-    //   } else {
-    //     console.log("Validation error!");
-    //     res
-    //       .status(400)
-    //       .json({ error: "failed, you must enter correct type of data" });
-    //   }
   }
 );
 
