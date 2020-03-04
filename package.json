@@ -16,6 +16,7 @@
     "form-data": "^2.3.2",
     "mongoose": "^5.9.2",
     "morgan": "^1.9.1",
+    "node-validator": "^0.1.27",
     "nodemon": "^1.18.4",
     "shortid": "^2.2.15",
     "uuid": "^7.0.0"

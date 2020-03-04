@@ -55,7 +55,7 @@ router.post("/", (req, res) => {
   if (checkOrder(req.body)) {
     console.log("Validation complete!");
     const order = new Order({
-      _id: new mongoose.Types.ObjectId(),
+      // _id: new mongoose.Types.ObjectId(),
       creator: req.body.creator,
       productsList: req.body.productsList,
       deliveryType: req.body.deliveryType,

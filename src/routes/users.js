@@ -1,5 +1,4 @@
 const express = require("express");
-
 let router = express.Router();
 
 const mongoose = require("mongoose");
@@ -51,7 +50,6 @@ router.post("/", (req, res) => {
   if (checkUser(req.body)) {
     console.log("Validation complete!");
     const user = new User({
-      _id: new mongoose.Types.ObjectId(),
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       telephone: req.body.telephone,

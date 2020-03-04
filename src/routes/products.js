@@ -1,6 +1,4 @@
 const express = require("express");
-// const bodyParser = require("body-parser");
-// let jsonParser = bodyParser.json();
 let router = express.Router();
 
 const mongoose = require("mongoose");
@@ -55,7 +53,6 @@ router.post("/", (req, res) => {
   if (checkProduct(req.body)) {
     console.log("Validation complete!");
     const product = new Product({
-      _id: new mongoose.Types.ObjectId(),
       sku: req.body.sku,
       name: req.body.name,
       description: req.body.description,
