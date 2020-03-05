@@ -122,10 +122,8 @@ router.put(
 
       Product.update({ _id: id }, { $set: newObj })
         .exec()
-        .then(console.log("Product already updated"))
-        .catch(err => {
-          console.log(err);
-          res.status(400).json({ error: err });
+        .then(resul => {
+          res.status(200).json({ status: "success" });
         });
     } else {
       console.log("Validation error!");
