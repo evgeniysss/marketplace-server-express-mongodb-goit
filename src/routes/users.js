@@ -6,20 +6,20 @@ const User = require("../../models/user");
 
 const { validationResult, checkSchema } = require("express-validator/check");
 
-const checkUser = userToCheck => {
-  const userName = userToCheck.user;
-  const telephone = userToCheck.telephone;
-  const password = userToCheck.password;
-  const email = userToCheck.email;
-  if (
-    typeof userName === "string" &&
-    typeof telephone === "string" &&
-    typeof password === "string" &&
-    typeof email === "string"
-  )
-    return true;
-  else return false;
-};
+// const checkUser = userToCheck => {
+//   const userName = userToCheck.user;
+//   const telephone = userToCheck.telephone;
+//   const password = userToCheck.password;
+//   const email = userToCheck.email;
+//   if (
+//     typeof userName === "string" &&
+//     typeof telephone === "string" &&
+//     typeof password === "string" &&
+//     typeof email === "string"
+//   )
+//     return true;
+//   else return false;
+// };
 
 router.get("/:userId", (req, res) => {
   const id = req.params.userId;
@@ -98,7 +98,9 @@ router.put(
     const errors = validationResult(req);
     if (errors.isEmpty()) {
       const id = req.params.userId;
+      console.log("id :", id);
       const reqBody = req.body;
+      console.log("req.body :", req.body);
       const newValueKey = Object.keys(reqBody).toString();
       const newValue = Object.values(reqBody);
       const newObj = {};
