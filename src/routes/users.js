@@ -1,112 +1,126 @@
 const express = require("express");
 let router = express.Router();
 
-const path = require("path");
-const fs = require("fs");
+const mongoose = require("mongoose");
+const User = require("../../models/user");
 
-// const uuid = require("uuid/v4");
-const shortid = require("shortid");
-let usersDataBase = require("../db/all-users.json");
+const { validationResult, checkSchema } = require("express-validator/check");
 
-const checkUser = user => {
-  const userName = user.user;
-  const userPhone = user.telephone.replace(/\s/g, "");
-  const userPass = user.password;
-  const userEmail = user.email;
-  if (
-    typeof userName === "string" &&
-    !isNaN(Number(userPhone)) &&
-    typeof userPass === "string" &&
-    typeof userEmail === "string"
-  )
-    return true;
-  else return false;
-};
-
-const saveUser = user => {
-  console.log("user :", user);
-
-  const usersDataBasePath = path.join(
-    __dirname,
-    "../",
-    "db/",
-    "/all-users.json"
-  );
-
-  const userDirPath = path.join(
-    __dirname,
-    "../",
-    "db/",
-    "users",
-    `/${user.user}`
-  );
-
-  fs.readFile(usersDataBasePath, "utf-8", (err, data) => {
-    if (err) {
+router.get("/:userId", (req, res) => {
+  const id = req.params.userId;
+  User.findById(id)
+    .exec()
+    .then(item => {
+      console.log(item);
+      res.status(200).json(item);
+    })
+    .catch(err => {
       console.log(err);
-    } else {
-      let users = JSON.parse(data);
-      user.id = shortid.generate();
-      users.push(user);
-      usersToJson = JSON.stringify(users);
-      fs.writeFile(usersDataBasePath, usersToJson, "utf-8", err => {
-        if (err) {
-          return console.log(err);
-        }
-        console.log("New user already saved!");
-      });
-      fs.mkdir(userDirPath, err => {
-        if (err) {
-          return console.log(err);
-        }
-      });
-    }
-  });
-};
-
-router.post("/*", (req, res) => {
-  let body = "";
-
-  req.on("data", data => {
-    body = body + data;
-    console.log("Incoming data!");
-  });
-
-  req.on("end", () => {
-    const userToCheckAndSave = JSON.parse(body);
-
-    if (checkUser(userToCheckAndSave)) {
-      console.log("Validation: success.");
-      saveUser(userToCheckAndSave);
-      res.setHeader("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "success", user: userToCheckAndSave }));
-      res.end();
-    } else {
-      console.log("Validation: error.");
-      res.setHeader("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error! Check type of input value!" }));
-      res.end();
-    }
-  });
+      res.status(404).json({ error: "User not found" });
+    });
 });
 
-router.get("/*", (req, res) => {
-  let userId = req.url.slice(req.url.lastIndexOf("/") + 1);
-  const getUserById = usersDataBase.find(user => user.id.toString() === userId);
+router.get("/", (req, res) => {
+  User.find()
+    .exec()
+    .then(items => {
+      console.log(items);
+      res.status(200).json(items);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
 
-  if (getUserById) {
-    res.setHeader("Content-Type", "application/json");
-    res.send(getUserById);
-    res.end();
-  } else {
-    res.setHeader("Content-Type", "application/json");
-    res.send(
-      JSON.stringify({
-        status: "not found"
-      })
-    );
-    res.end();
+router.post(
+  "/",
+  checkSchema({
+    user: { isString: true },
+    telephone: { isString: true },
+    email: { isString: true },
+    password: { isString: true }
+  }),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      console.log("Validation complete!");
+      const user = new User({
+        user: req.body.user,
+        telephone: req.body.telephone,
+        password: req.body.password,
+        email: req.body.email
+      });
+
+      user
+        .save()
+        .then(result => {
+          console.log(result);
+          res.status(200).json({
+            status: "success",
+            user: user
+          });
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(500).json({ error: err });
+        });
+    } else {
+      console.log("Validation error!");
+      res
+        .status(400)
+        .json({ error: "failed, you must enter correct type of data" });
+    }
   }
-});
+);
+
+router.put(
+  "/:userId",
+  checkSchema({
+    viewedProducts: { isArray: true }
+  }),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      const id = req.params.userId;
+      console.log("id :", id);
+      const reqBody = req.body;
+      console.log("req.body :", req.body);
+      const newValueKey = Object.keys(reqBody).toString();
+      const newValue = Object.values(reqBody);
+      const newObj = {};
+      newObj[newValueKey] = newValue;
+
+      User.findById(id)
+        .exec()
+        .then(item => {
+          console.log(item);
+          res.status(200).json({
+            status: "success",
+            user: item
+          });
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(404).json({ error: "User not found" });
+        });
+
+      User.update({ _id: id }, { $set: newObj })
+        .exec()
+        .then(item => {
+          res.status(200).json(item);
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(500).json({ error: err });
+        });
+    } else {
+      console.log("Validation error!");
+      res
+        .status(400)
+        .json({ error: "failed, you must enter correct type of data" });
+    }
+  }
+);
 
 module.exports = router;
