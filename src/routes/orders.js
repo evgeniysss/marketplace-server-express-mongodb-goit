@@ -6,23 +6,6 @@ const Order = require("../../models/orders");
 
 const { validationResult, checkSchema } = require("express-validator/check");
 
-const checkOrder = orderToCheck => {
-  const creator = orderToCheck.creator;
-  const productsList = orderToCheck.productsList;
-  const deliveryType = orderToCheck.deliveryType;
-  const deliveryAdress = orderToCheck.deliveryAdress;
-  const sumToPay = orderToCheck.sumToPay;
-  if (
-    typeof creator === "string" &&
-    typeof productsList === "object" &&
-    typeof deliveryType === "string" &&
-    typeof deliveryAdress === "string" &&
-    typeof sumToPay === "number"
-  )
-    return true;
-  else return false;
-};
-
 router.get("/:orderId", (req, res) => {
   const id = req.params.orderId;
   Order.findById(id)

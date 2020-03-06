@@ -6,21 +6,6 @@ const User = require("../../models/user");
 
 const { validationResult, checkSchema } = require("express-validator/check");
 
-// const checkUser = userToCheck => {
-//   const userName = userToCheck.user;
-//   const telephone = userToCheck.telephone;
-//   const password = userToCheck.password;
-//   const email = userToCheck.email;
-//   if (
-//     typeof userName === "string" &&
-//     typeof telephone === "string" &&
-//     typeof password === "string" &&
-//     typeof email === "string"
-//   )
-//     return true;
-//   else return false;
-// };
-
 router.get("/:userId", (req, res) => {
   const id = req.params.userId;
   User.findById(id)

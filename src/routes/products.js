@@ -6,21 +6,6 @@ const Product = require("../../models/products");
 
 const { validationResult, checkSchema } = require("express-validator/check");
 
-// const checkProduct = productToCheck => {
-//   const sku = productToCheck.sku;
-//   const name = productToCheck.name;
-//   const description = productToCheck.description;
-//   const categories = productToCheck.categories;
-//   if (
-//     typeof sku === "number" &&
-//     typeof name === "string" &&
-//     typeof description === "string" &&
-//     typeof categories === "object"
-//   )
-//     return true;
-//   else return false;
-// };
-
 router.get("/:productId", (req, res) => {
   const id = req.params.productId;
   Product.findById(id)
